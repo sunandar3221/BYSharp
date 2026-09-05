@@ -75,15 +75,29 @@ elif [ "$IS_TERMUX" -eq 0 ] && [ -n "$LINUX_BIN" ]; then
 fi
 
 if [ "$DOWNLOAD_OK" -eq 1 ]; then
-    echo "Pre-compiled binary berhasil diunduh tanpa perlu kompilasi!"
     $SUDO mkdir -p "$INSTALL_DIR"
     $SUDO cp "$BIN_PATH" "$INSTALL_DIR/bys"
     $SUDO cp "$BIN_PATH" "$INSTALL_DIR/by#"
     $SUDO chmod 755 "$INSTALL_DIR/bys"
     $SUDO chmod 755 "$INSTALL_DIR/by#"
     rm -f "$BIN_PATH"
-else
-    echo "Pre-compiled binary belum tersedia atau sedang offline, mengompilasi dari source..."
+
+    if ! "$INSTALL_DIR/bys" --version >/dev/null 2>&1; then
+        if [ "$IS_TERMUX" -eq 1 ]; then
+            pkg install -y libc++ >/dev/null 2>&1 || true
+        fi
+        if ! "$INSTALL_DIR/bys" --version >/dev/null 2>&1; then
+            DOWNLOAD_OK=0
+        fi
+    fi
+
+    if [ "$DOWNLOAD_OK" -eq 1 ]; then
+        echo "Pre-compiled binary berhasil diverifikasi dan siap digunakan!"
+    fi
+fi
+
+if [ "$DOWNLOAD_OK" -eq 0 ]; then
+    echo "Mengompilasi source code secara lokal..."
     if command -v clang++ >/dev/null 2>&1; then
         CXX="clang++"
     elif command -v g++ >/dev/null 2>&1; then
