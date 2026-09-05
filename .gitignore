@@ -2,5 +2,7 @@
 *.obj
 *.exe
 *.log
+*.zip
+release_notes.md
 temp.txt
 test_dir/
