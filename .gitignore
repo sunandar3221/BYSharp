@@ -1,0 +1,6 @@
+*.o
+*.obj
+*.exe
+*.log
+temp.txt
+test_dir/
