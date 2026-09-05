@@ -7,6 +7,53 @@
 
 int main(int argc, char* argv[]) {
     if (argc > 1) {
+        std::string arg1 = argv[1];
+        if (arg1 == "--version" || arg1 == "-v" || arg1 == "-V") {
+            std::cout << "BY# (BYSharp) version 1.0.0\n";
+            std::cout << "Architecture: 64-bit | Standard: ASCII Keyboard & Mandatory Binary Text\n";
+            return 0;
+        }
+        if (arg1 == "--help" || arg1 == "-h") {
+            std::cout << "BY# (BYSharp) Interpreter\n";
+            std::cout << "Usage:\n";
+            std::cout << "  bys <file.by#>      Run script file\n";
+            std::cout << "  by# <file.by#>      Run script file (alias)\n";
+            std::cout << "  bys -e \"<code>\"     Execute inline BY# code\n";
+            std::cout << "  bys                 Launch interactive REPL\n";
+            std::cout << "  bys --version       Display version information\n";
+            std::cout << "  bys --help          Display this help message\n";
+            return 0;
+        }
+        if (arg1 == "-e") {
+            if (argc < 3) {
+                std::cerr << "Error: -e expects code string argument\n";
+                return 1;
+            }
+            std::string source = argv[2];
+            try {
+                Lexer lexer(source);
+                auto tokens = lexer.tokenize();
+                Parser parser(std::move(tokens));
+                auto program = parser.parseProgram();
+                Evaluator evaluator;
+                evaluator.executeProgram(program);
+            } catch (const SyntaxError& e) {
+                std::cerr << e.what();
+                if (e.line > 0) {
+                    std::cerr << " at line " << e.line << ", column " << e.column;
+                }
+                std::cerr << "\n";
+                return 1;
+            } catch (const RuntimeError& e) {
+                std::cerr << e.what() << "\n";
+                return 1;
+            } catch (const std::exception& e) {
+                std::cerr << "Error: " << e.what() << "\n";
+                return 1;
+            }
+            return 0;
+        }
+
         std::string filePath = argv[1];
         std::ifstream file(filePath);
         if (!file.is_open()) {

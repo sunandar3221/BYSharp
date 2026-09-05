@@ -314,18 +314,25 @@ file_write<path, [: 01001111 01001011 :]>;
 
 ### A. Instalasi di Android Termux
 
-Di Termux Android, instalasi dapat dilakukan sangat cepat menggunakan skrip installer otomatis atau Makefile:
+Di Termux Android, pengguna **TIDAK PERLU mengunduh bahan/compiler berukuran besar** (`clang`/`make`). Pre-compiled binary resmi telah disediakan untuk arsitektur AArch64 (ARM64), ARMv7a (32-bit), dan x86_64:
 
-#### Metode 1: Menggunakan Skrip Installer Otomatis (`install.sh`)
+#### Metode 1: Instalasi Instan 1-Detik (Rekomendasi - Tanpa Download Bahan)
+Cukup jalankan satu baris perintah berikut di terminal Termux Anda:
 ```bash
-pkg update -y && pkg install -y git clang make
+curl -sL https://raw.githubusercontent.com/sunandar3221/BYSharp/main/install.sh | bash
+```
+*Skrip otomatis mendeteksi arsitektur CPU ponsel Anda, mengunduh binary siap pakai (~200 KB), dan memasangnya langsung ke `$PREFIX/bin/bys` dan `$PREFIX/bin/by#`.*
+
+#### Metode 2: Dari Git Repository
+```bash
 git clone https://github.com/sunandar3221/BYSharp.git
 cd BYSharp
 chmod +x install.sh
 ./install.sh
 ```
 
-#### Metode 2: Menggunakan Makefile Manual
+#### Metode 3: Kompilasi Manual dari Source Code (Opsional)
+Jika Anda ingin mengompilasi sendiri dari source code:
 ```bash
 pkg install -y clang make
 make

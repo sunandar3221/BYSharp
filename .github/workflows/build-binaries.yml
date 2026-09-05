@@ -1,0 +1,51 @@
+name: Build Cross-Platform Binaries
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Linux x86_64 Binary
+        run: |
+          g++ -std=c++17 -O2 -Isrc src/main.cpp src/Lexer.cpp src/Parser.cpp src/Evaluator.cpp -o bys-linux-x86_64 -lpthread
+          strip bys-linux-x86_64
+
+      - name: Setup Android NDK
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26b
+
+      - name: Build Android Binaries
+        run: |
+          TOOLCHAIN=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin
+
+          $TOOLCHAIN/aarch64-linux-android24-clang++ -std=c++17 -O2 -Isrc \
+            src/main.cpp src/Lexer.cpp src/Parser.cpp src/Evaluator.cpp \
+            -o bys-android-aarch64
+          $TOOLCHAIN/llvm-strip bys-android-aarch64
+
+          $TOOLCHAIN/armv7a-linux-androideabi24-clang++ -std=c++17 -O2 -Isrc \
+            src/main.cpp src/Lexer.cpp src/Parser.cpp src/Evaluator.cpp \
+            -o bys-android-armv7a
+          $TOOLCHAIN/llvm-strip bys-android-armv7a
+
+          $TOOLCHAIN/x86_64-linux-android24-clang++ -std=c++17 -O2 -Isrc \
+            src/main.cpp src/Lexer.cpp src/Parser.cpp src/Evaluator.cpp \
+            -o bys-android-x86_64
+          $TOOLCHAIN/llvm-strip bys-android-x86_64
+
+      - name: Upload Binaries to GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload v1.0.0 bys-linux-x86_64 bys-android-aarch64 bys-android-armv7a bys-android-x86_64 --clobber
